@@ -15,17 +15,18 @@ In this course we will be talking about sensor fusion, whch is the process of ta
 
 ## Installation
 
-### Linux Ubuntu 16
+### Ubuntu 
 
-Install PCL, C++
+https://askubuntu.com/questions/916260/how-to-install-point-cloud-library-v1-8-pcl-1-8-0-on-ubuntu-16-04-2-lts-for
 
-The link here is very helpful, 
-https://larrylisky.com/2014/03/03/installing-pcl-on-ubuntu/
+### Windows 
 
-A few updates to the instructions above were needed.
+http://www.pointclouds.org/downloads/windows.html
 
-* libvtk needed to be updated to libvtk6-dev instead of (libvtk5-dev). The linker was having trouble locating libvtk5-dev while building, but this might not be a problem for everyone.
+### MAC
 
-* BUILD_visualization needed to be manually turned on, this link shows you how to do that,
-http://www.pointclouds.org/documentation/tutorials/building_pcl.php
+http://www.pointclouds.org/downloads/macosx.html
+http://www.pointclouds.org/documentation/tutorials/installing_homebrew.php
+
+
 
