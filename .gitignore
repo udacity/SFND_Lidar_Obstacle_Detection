@@ -1,2 +1,6 @@
 build/
 tags
+src/quiz/cluster/CMakeFiles/
+src/quiz/cluster/build/ 
+src/quiz/cluster/debug/ 
+
