@@ -117,7 +117,6 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
   seg.setMaxIterations(maxIterations);
   seg.setDistanceThreshold(distanceThreshold);
 
-
   seg.setInputCloud(cloud);
   seg.segment(*inliers, *coefficients);
 
@@ -237,5 +236,135 @@ std::vector<boost::filesystem::path> ProcessPointClouds<PointT>::streamPcd(std::
   sort(paths.begin(), paths.end());
 
   return paths;
+
+}
+
+  template<typename PointT>
+std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Ransac(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations, float distanceTol)
+{
+	std::unordered_set<int> inliersResult;
+	srand(time(NULL));
+	
+	// For max iterations 
+  std::unordered_set<int> inliers;
+  while(maxIterations--)
+  {
+	// Randomly sample subset and fit line
+
+    while(inliers.size() < 3)
+      inliers.insert(rand()%(cloud->points.size()));
+
+    auto itr = inliers.begin();
+    float x1 = cloud->points[*itr].x;
+    float y1 = cloud->points[*itr].y;
+    float z1 = cloud->points[*itr].z;
+    itr++;
+    float x2 = cloud->points[*itr].x;
+    float y2 = cloud->points[*itr].y;
+    float z2 = cloud->points[*itr].z;
+    itr++;
+    float x3 = cloud->points[*itr].x;
+    float y3 = cloud->points[*itr].y;
+    float z3 = cloud->points[*itr].z;
+    
+	// Measure distance between every point and fitted line
+
+    float a = ((y2 - y1)*(z3 - z1)  - (y3 - y1) * (z2 - z1));
+    float b = ((z2 - z1) * (x3 - x1) - (z3 - z1)*(x2 - x1));
+    float c = ((x2 - x1) * (y3 - y1) - (x3 - x1)*(y2 - y1));
+    float d = (x1 * (y3*z2 - y3*z1 - y1*z2 - y2*z3 + y2*z1 + y1*z3) + 
+               y1 * (z3*x2 - z3*x1 - z1*x2 - z2*x3 + z2*x1 + z1*x3) +
+               z1 * (x3*y2 - x3*y1 - x1*y2 - x2*y3 + x2*y1 + x1*y3));
+
+    for(int i=0; i < cloud->points.size();i++)
+    {
+      if(inliers.count(i)>0)
+        continue;
+
+      PointT point = cloud->points[i];
+      float x0 = point.x;
+      float y0 = point.y;
+      float z0 = point.z;
+
+      float dist = fabs(a*x0 + b*y0 +c*z0 + d)/sqrt(a*a + b*b + c*c);
+
+      if(dist <= distanceTol)
+        inliers.insert(i);
+    }
+
+	// If distance is smaller than threshold count it as inlier
+    if(inliers.size() > inliersResult.size())
+    {
+      inliersResult = inliers;
+    }
+  }
+
+	// Return indicies of inliers from fitted line with most inliers
+	
+	typename pcl::PointCloud<PointT>::Ptr  cloudInliers(new pcl::PointCloud<PointT>());
+	typename pcl::PointCloud<PointT>::Ptr cloudOutliers(new pcl::PointCloud<PointT>());
+
+	for(int index = 0; index < cloud->points.size(); index++)
+	{
+		PointT pointa = cloud->points[index];
+		if(inliers.count(index))
+			cloudInliers->points.push_back(pointa);
+		else
+			cloudOutliers->points.push_back(pointa);
+	}
+
+  std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(cloudInliers, cloudOutliers );
+
+  return segResult;
+}
+
+  template<typename PointT>
+void ProcessPointClouds<PointT>::clusterHelper(int i, typename pcl::PointCloud<PointT>::Ptr cloud, std::vector<int>& cluster,std::vector<bool>& processed, KdTree3d* tree,float distanceTol)
+{
+
+  processed[i] = true;
+  cluster.push_back(i);
+
+
+  std::vector<float> p = {
+    cloud->points[i].x,
+    cloud->points[i].y,
+    cloud->points[i].z,
+  };
+  std::vector<int> nearest = tree->search(p,distanceTol);
+
+  for(int id: nearest)
+  {
+
+    if(!processed[id])
+      clusterHelper(id,cloud,cluster, processed, tree, distanceTol);
+  }
+}
+
+  template<typename PointT>
+std::vector<std::vector<int>> ProcessPointClouds<PointT>::euclideanCluster(typename pcl::PointCloud<PointT>::Ptr cloud, KdTree3d* tree, float distanceTol)
+{
+
+  std::vector<std::vector<int>> clusters;
+
+  std::vector<bool> processed(cloud->points.size(),false);
+
+  
+  int i =0;
+  while(i < cloud->points.size())
+  {
+    if(processed[i])
+    {
+      i++;
+      continue;
+    }
+
+    std::vector<int> cluster;
+    clusterHelper(i, cloud, cluster, processed, tree, distanceTol);
+    clusters.push_back(cluster);
+    i++;
+  }
+
+  return clusters;
 
 }
