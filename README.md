@@ -32,8 +32,8 @@ http://www.pointclouds.org/downloads/windows.html
 	$> brew update
 	```
 3. add  homebrew science [tap](https://docs.brew.sh/Taps) 
-		```bash
-		$> brew tap brewsci/science
+	```bash
+	$> brew tap brewsci/science
 	```
 4. view pcl install options
 	```bash
