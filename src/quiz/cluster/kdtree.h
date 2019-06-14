@@ -16,11 +16,11 @@ struct Node
 	:	point(arr), id(setId), left(NULL), right(NULL)
 	{}
 
-    ~Node()
-    {
-        delete left;
-        delete right;
-    }
+	~Node()
+	{
+		delete left;
+		delete right;
+	}
 };
 
 struct KdTree
@@ -31,10 +31,10 @@ struct KdTree
 	: root(NULL)
 	{}
 
-    ~KdTree()
-    {
-        delete root;
-    }
+	~KdTree()
+	{
+		delete root;
+	}
 
 	void insert(std::vector<float> point, int id)
 	{
