@@ -17,7 +17,16 @@ In this course we will be talking about sensor fusion, whch is the process of ta
 
 ### Ubuntu 
 
-https://askubuntu.com/questions/916260/how-to-install-point-cloud-library-v1-8-pcl-1-8-0-on-ubuntu-16-04-2-lts-for
+```bash
+$> sudo apt install libpcl-dev
+$> cd ~
+$> git clone https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git
+$> cd SFND_Lidar_Obstacle_Detection
+$> mkdir build && cd build
+$> cmake ..
+$> make
+$> ./environment
+```
 
 ### Windows 
 
