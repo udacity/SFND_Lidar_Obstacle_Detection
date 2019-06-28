@@ -1,3 +1,0 @@
-/home/s-jin/Documents/SFND_Lidar_Obstacle_Detection/src/quiz/ransac/ransac/CMakeFiles/edit_cache.dir
-/home/s-jin/Documents/SFND_Lidar_Obstacle_Detection/src/quiz/ransac/ransac/CMakeFiles/rebuild_cache.dir
-/home/s-jin/Documents/SFND_Lidar_Obstacle_Detection/src/quiz/ransac/ransac/CMakeFiles/quizRansac.dir
