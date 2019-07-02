@@ -24,9 +24,9 @@ class ProcessPointClouds {
 public:
 
     //constructor
-    ProcessPointClouds();
+    ProcessPointClouds() = default;
     //deconstructor
-    ~ProcessPointClouds();
+    ~ProcessPointClouds() = default;
 
     void numPoints(typename pcl::PointCloud<PointT>::Ptr cloud);
 
