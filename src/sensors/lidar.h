@@ -114,10 +114,7 @@ struct Lidar
 		}
 	}
 
-	~Lidar()
-	{
-		// pcl uses boost smart pointers for cloud pointer so we don't have to worry about manually freeing the memory
-	}
+	~Lidar() = default; // pcl uses boost smart pointers for cloud pointer so we don't have to worry about manually freeing the memory
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan()
 	{
