@@ -30,7 +30,49 @@ $> ./environment
 
 ### Windows 
 
-http://www.pointclouds.org/downloads/windows.html
+The official [PCL's prebuilt binaries for Windows](http://www.pointclouds.org/downloads/windows.html) are out of date because they're built only for Visual Studio 2008 and 2010.
+
+If you're using _Visual Studio 2017_ and you don't want to compile libraries you can download the [All In One installer](https://github.com/PointCloudLibrary/pcl/releases/tag/pcl-1.9.1) from the official _PCL's GitHub_ repository, but:
+
+1. It will install in your computer lot of things that maybe you won't use never (like drivers for _Kinect_).
+2. You can't use it with _Visual Studio 2019_.
+
+The best way for Windows is to build the library from source, and the easiest way is using 
+[Microsoft's VCPKG](https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=vs-2019) because this tool will compile all the dependences for you.
+
+To use _VCPKG_ first you have to build it. If you don't have it already, follow the next steps:
+
+```
+c:> cd c:\
+c:> git clone https://github.com/microsoft/vcpkg.git
+c:> cd vcpkg
+c:\vcpkg> .\bootstrap-vcpkg.bat
+```
+
+Once you've _VCPKG_, you can build _PCL_ with the next command:
+
+```
+c:\vcpkg> vcpkg install pcl:x64-windows
+```
+
+Once finished (be patient) you've to do two last steps:
+
+1. Add **C:\vcpkg\installed\x64-windows\bin** to your user's _PATH_.
+2. Set the _CMake Toolchain File_ to **c:\vcpkg\scripts\buildsystems\vcpkg.cmake**.
+
+	If you're using Visual _Studio 2019_ and you've installed the [C++ CMake tools for Windows](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019) component, you can do it directly from _Visual Studio 2019_: In _Solution Explorer_ right-click in _CMakeList.txt_ and select *CMake settings for playback*. Then in _General_ tab you have the _CMake Toolchain File_ setting. Set the path and press _Ctrl+S_ to save. _Visual Studio_ will generate the _CMake cache_ automatically.
+
+The first time you generate the _CMake cache_, you'll get the next error:
+
+**Property INTERFACE_LINK_LIBRARIES may not contain link-type keyword "optimized". The INTERFACE_LINK_LIBRARIES property may contain configuration-sensitive generator-expressions which may be used to specify per-configuration rules.**
+
+This is a _PCL's CMake_ configuration file error and, as you can see in https://github.com/PointCloudLibrary/pcl/issues/2989#issuecomment-489433303, the solution is commenting a line in the _PCLConfig.cmake_ file, so:
+
+1. Open **C:\vcpkg\installed\x64-windows\share\pcl\PCLConfig.cmake**
+2. Comment the line: **list(APPEND PCL_${COMPONENT}_LIBRARIES "${${LIB}_LIBRARIES}")** adding a #
+3. Save the file
+
+And now you are ready to go.
 
 ### MAC
 
