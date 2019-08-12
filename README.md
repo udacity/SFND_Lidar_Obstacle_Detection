@@ -55,10 +55,11 @@ Once you've _VCPKG_, you can build _PCL_ with the next command:
 c:\vcpkg> vcpkg install pcl:x64-windows
 ```
 
-Once finished (be patient) you've to do two last steps:
+Once finished (be patient) you've to do three last steps:
 
 1. Add **C:\vcpkg\installed\x64-windows\bin** to your user's _PATH_.
-2. Set the _CMake Toolchain File_ to **c:\vcpkg\scripts\buildsystems\vcpkg.cmake**.
+2. Add **C:\vcpkg\installed\x64-windows\debug\bin** to your user's _PATH_.
+3. Set the _CMake Toolchain File_ to **c:\vcpkg\scripts\buildsystems\vcpkg.cmake**.
 
 	If you're using Visual _Studio 2019_ and you've installed the [C++ CMake tools for Windows](https://docs.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=vs-2019) component, you can do it directly from _Visual Studio 2019_: In _Solution Explorer_ right-click in _CMakeList.txt_ and select *CMake settings for playback*. Then in _General_ tab you have the _CMake Toolchain File_ setting. Set the path and press _Ctrl+S_ to save. _Visual Studio_ will generate the _CMake cache_ automatically.
 
