@@ -47,7 +47,7 @@ struct Ray
 			// check if there is any collisions with cars
 			if(!collision && castDistance < maxDistance)
 			{
-				for(Car car : cars)
+				for(auto car : cars)
 				{
 					collision |= car.checkCollision(castPosition);
 					if(collision)
@@ -86,21 +86,25 @@ struct Lidar
 		: cloud(new pcl::PointCloud<pcl::PointXYZ>()), position(0,0,2.6)
 	{
 		// TODO:: set minDistance to 5 to remove points from roof of ego car
-		minDistance = 0;
+		//minDistance = 0;
+		minDistance = 5;
 		maxDistance = 50;
 		resoultion = 0.2;
 		// TODO:: set sderr to 0.2 to get more interesting pcd files
-		sderr = 0.0;
+		//sderr = 0.0;
+		sderr = 0.2;
 		cars = setCars;
 		groundSlope = setGroundSlope;
 
 		// TODO:: increase number of layers to 8 to get higher resoultion pcd
-		int numLayers = 3;
+		//int numLayers = 3;
+		int numLayers = 8;
 		// the steepest vertical angle
 		double steepestAngle =  30.0*(-pi/180);
 		double angleRange = 26.0*(pi/180);
 		// TODO:: set to pi/64 to get higher resoultion pcd
-		double horizontalAngleInc = pi/6;
+		//double horizontalAngleInc = pi/6;
+		double horizontalAngleInc = pi / 64;
 
 		double angleIncrement = angleRange/numLayers;
 
