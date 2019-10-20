@@ -32,7 +32,7 @@ struct KdTree {
     void _inserthelper(Node ** node, unsigned int depth, std::vector<float> point, int id ) {
         if (*node == NULL) {
             kDim = point.size();
-            std::cout << "insert dim kDim='" << kDim << "'" << std::endl;
+//            std::cout << "insert dim kDim='" << kDim << "'" << std::endl;
             *node = new Node(point, id);
         } else {
             unsigned int cd = depth % kDim; //kDim=2 x (even = 0 index) or y (odd = 1 index). for kDim=3 cd=0,1,2
@@ -91,7 +91,7 @@ struct KdTree {
     std::vector<int> search(std::vector<float> target, float distanceTol) {
         std::vector<int> ids;
 //        kDim = target.size() ;
-        std::cout << "search dim kDim='" << kDim << "'" << std::endl;
+//        std::cout << "search dim kDim='" << kDim << "'" << std::endl;
         _searchHelper(target, root, 0, distanceTol, ids);
         return ids;
     }
