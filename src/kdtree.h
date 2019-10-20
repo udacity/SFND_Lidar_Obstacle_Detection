@@ -1,8 +1,16 @@
 /* \author Aaron Brown */
 // Quiz on implementing kd tree
 
-#include "../../render/render.h"
 
+#ifndef PLAYBACK_KDTREE_H
+#define PLAYBACK_KDTREE_H
+
+#include <iostream>
+#include <string>
+#include <vector>
+#include <ctime>
+//#include <chrono>
+#include <math.h>
 
 // Structure to represent node of kd tree
 struct Node {
@@ -94,3 +102,5 @@ struct KdTree {
 
 
 
+
+#endif //PLAYBACK_KDTREE_H
