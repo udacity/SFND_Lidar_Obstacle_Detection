@@ -203,15 +203,39 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 template<typename PointT>
 std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::Clustering(typename pcl::PointCloud<PointT>::Ptr cloud, float clusterTolerance, int minSize, int maxSize)
 {
-
     // Time clustering process
-    
     auto startTime = std::chrono::steady_clock::now();
-
     std::vector<typename pcl::PointCloud<PointT>::Ptr> clusters;
 
-    // TODO:: Fill in the function to perform euclidean clustering to group detected obstacles
+    // TODO:: Fill in the function to perform euclidean clustering to 
+    // group detected obstacles create the kd tree with the point cloud
+    typename pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
+    tree->setInputCloud (cloud);
+ 
+    // Initialize Eucledian filtering code and its relevant parameters
+    std::vector<pcl::PointIndices> cluster_indices;
+    pcl::EuclideanClusterExtraction<PointT> ec;
+    // Setup appropriate clustering sizes for different filters
+    ec.setClusterTolerance(clusterTolerance);
+    ec.setMinClusterSize(minSize);
+    ec.setMaxClusterSize(maxSize);
+    ec.setSearchMethod(tree);
+    ec.setInputCloud(cloud);
+    ec.extract(cluster_indices);
 
+    // for each point in the point cloud cluster indicies
+    auto count = 0;
+    for (auto it=cluster_indices.begin(); it != cluster_indices.end(); it++) {
+        typename pcl::PointCloud<PointT>::Ptr cluster_cloud (new pcl::PointCloud<PointT>);
+        std::cout << "Cluster id: " << count << std::endl;
+        for(auto pit=it->indices.begin(); pit != it->indices.end(); pit++) {
+            cluster_cloud->points.push_back(cloud->points[*pit]);
+            std::cout << cloud->points[*pit] << std::endl;
+        }
+        clusters.push_back(cluster_cloud);
+        count ++;
+    }
+    
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "clustering took " << elapsedTime.count() << " milliseconds and found " << clusters.size() << " clusters" << std::endl;
