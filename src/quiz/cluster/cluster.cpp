@@ -77,16 +77,16 @@ void proximity(int id,
 			   const std::vector<std::vector<float>>& points,
 			   KdTree* tree, 
 			   std::vector<int> &cluster,
-			   std::set<std::vector<float>>& processed,
+			   std::vector<bool>& processed,
 			   float distanceTol)
 {
 	std::vector<float> point = points[id];
-	processed.insert(point);
+	processed[id] = true;
 	cluster.push_back(id);
 	std::vector<int> neighbour_ids = tree->search(point, distanceTol);
 	for(int idx : neighbour_ids) {
 		std::vector<float> point = points[idx];
-		if (processed.count(point) == 0) {
+		if (processed[idx] == 0) {
 			proximity(idx, points, tree, cluster, processed, distanceTol);
 		}
 	}
@@ -95,13 +95,13 @@ void proximity(int id,
 
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
-	std::set<std::vector<float>> processed;
+	std::vector<bool> processed(points.size(), false);
 	std::vector<std::vector<int>> clusters;
  
 	for (int i=0; i < points.size(); i++) {
 		std::vector<float> point = points[i];
 		// check if the point has already been processed or not
-		if (processed.count(point) == 0) {
+		if (processed[i] == 0) {
 			std::vector<int> cluster;
 			proximity(i, points, tree, cluster, processed, distanceTol);
 			clusters.push_back(cluster);
