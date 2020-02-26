@@ -2,7 +2,7 @@
 // Quiz on implementing kd tree
 
 #include "../../render/render.h"
-
+#include <cmath>
 
 // Structure to represent node of kd tree
 struct Node
@@ -51,10 +51,26 @@ struct KdTree
 	std::vector<int> search(std::vector<float> target, float distanceTol)
 	{
 		std::vector<int> ids;
+		search_helper(ids, root, target, distanceTol, 0);
 		return ids;
 	}
-	
 
+	void search_helper(std::vector<int> &ids, Node* node, std::vector<float> target, float distanceTol, int depth)
+	{
+		if (node != NULL) {
+			int cd = depth % 2;
+			float distance = sqrt(pow((target[0] - node->point[0]), 2) + pow((target[1] - node->point[1]), 2));
+			if (distance < distanceTol) {
+				ids.push_back(node->id);
+			}
+			if (node->point[cd] >= target[cd] - distanceTol) {
+				search_helper(ids, node->left, target, distanceTol, depth + 1);
+			}
+			if (node->point[cd] <= target[cd] + distanceTol) {
+				search_helper(ids, node->right, target, distanceTol, depth + 1);
+			}
+		}
+	}
 };
 
 
