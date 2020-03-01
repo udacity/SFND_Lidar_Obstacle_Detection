@@ -21,20 +21,55 @@ void ProcessPointClouds<PointT>::numPoints(typename pcl::PointCloud<PointT>::Ptr
 
 
 template<typename PointT>
-typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(typename pcl::PointCloud<PointT>::Ptr cloud, float filterRes, Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint)
+typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(
+    typename pcl::PointCloud<PointT>::Ptr cloud, 
+    float filterRes,
+    Eigen::Vector4f minPoint,
+    Eigen::Vector4f maxPoint)
 {
+    std::cout << "Input point size: " << cloud->points.size() << std::endl;
 
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
+    typename pcl::PointCloud<PointT>::Ptr cloud_filtered (new pcl::PointCloud<PointT>);
+    typename pcl::PointCloud<PointT>::Ptr cloud_region (new pcl::PointCloud<PointT>);
+    typename pcl::PointCloud<PointT>::Ptr output_cloud (new pcl::PointCloud<PointT>);
 
     // TODO:: Fill in the function to do voxel grid point reduction and region based filtering
+    pcl::VoxelGrid<PointT> vg;
+    vg.setInputCloud (cloud);
+    vg.setLeafSize (filterRes, filterRes, filterRes);
+    vg.filter (*cloud_filtered);
+    
+    pcl::CropBox<PointT> region;
+    region.setInputCloud(cloud_filtered);
+    region.setMin(minPoint);
+    region.setMax(maxPoint);
+    region.setNegative(false);
+    region.filter(*cloud_region);
+
+    pcl::CropBox<PointT> crop_car_box;
+    std::vector<int> indicies;
+    crop_car_box.setMin(Eigen::Vector4f(-1.5, -1.5, -1.0, 1.));
+    crop_car_box.setMax(Eigen::Vector4f(2.5, 1.7, -0.4, 1));
+    crop_car_box.setInputCloud(cloud_region);
+    crop_car_box.setNegative(true);
+    crop_car_box.filter(indicies);
+
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+    for (auto index : indicies)
+        inliers->indices.push_back(index);
+    pcl::ExtractIndices<PointT> extract;
+    extract.setInputCloud(cloud_region);
+    extract.setIndices(inliers);
+    extract.filter(*output_cloud);
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "filtering took " << elapsedTime.count() << " milliseconds" << std::endl;
-
-    return cloud;
-
+    std::cout << "filtered size: " << cloud_filtered->points.size() << std::endl;
+    return output_cloud;
+    
 }
 
 inline int get_random_int(const int max_val)
@@ -178,14 +213,12 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 {
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
-    std::unordered_set<int> inliers = Ransac<pcl::PointXYZ>(cloud, maxIterations, distanceThreshold);
+    std::unordered_set<int> inliers = Ransac<PointT>(cloud, maxIterations, distanceThreshold);
 
     typename pcl::PointCloud<PointT>::Ptr obstacles_p (new pcl::PointCloud<PointT>);
     typename pcl::PointCloud<PointT>::Ptr plane_p (new pcl::PointCloud<PointT>);
 
-    for(int index = 0; index < cloud->points.size(); index++)
-	{
-        std::cout << index << ":" <<     cloud->points[index] << std::endl;
+    for(int index = 0; index < cloud->points.size(); index++) {
  		PointT point = cloud->points[index];
 		if(inliers.count(index)) {
             plane_p->points.push_back(cloud->points[index]);
@@ -227,11 +260,10 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     auto count = 0;
     for (auto it=cluster_indices.begin(); it != cluster_indices.end(); it++) {
         typename pcl::PointCloud<PointT>::Ptr cluster_cloud (new pcl::PointCloud<PointT>);
-        std::cout << "Cluster id: " << count << std::endl;
         for(auto pit=it->indices.begin(); pit != it->indices.end(); pit++) {
             cluster_cloud->points.push_back(cloud->points[*pit]);
-            std::cout << cloud->points[*pit] << std::endl;
         }
+        std::cout << "Cluster id: " << count << ", size: " << cluster_cloud->points.size() << std::endl;
         clusters.push_back(cluster_cloud);
         count ++;
     }
