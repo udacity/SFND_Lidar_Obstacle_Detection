@@ -14,12 +14,12 @@
 using namespace cv;
 int plane_distance_threshold_in_cms = 25;
 int min_cluster_size = 10;
-int max_cluster_size = 50;
+int max_cluster_size = 1000;
 int next_frame = 0;
 int maxIterations = 100;
-int filter_resolution_cms = 10;
+int filter_resolution_cms = 15;
 int use_pcl_ransac = 0;
-int show_road = false;
+int show_road = 0;
 int pause_frame = 0;
 
 std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer::Ptr& viewer)
@@ -73,11 +73,13 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
 
     std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pointProcessor.Clustering(segResult.first, 1.0, 3, 30);
     int clusterId = 0;
-    std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};
+    std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1),
+                                 Color(1, 1, 0), Color(0, 1, 1), Color(1, 0, 1),
+                                 Color(0.5, 0.5, 0), Color(0.5, 0, 0.5), Color(0, 0.5, 0.5),
+                                 Color(0.5, 0.5, 1.), Color(0.5, 1, 0.5), Color(1, 0.5, 0.5)};
     for (pcl::PointCloud<pcl::PointXYZ>::Ptr cluster : cloudClusters)
     {
-        std::cout << "cluster size ";
-        pointProcessor.numPoints(cluster);
+//        pointProcessor.numPoints(cluster);
         renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId]);
         ++clusterId;
 
@@ -99,17 +101,17 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr& viewer,
 
     std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segResult;
     segResult = pointProcessor.SegmentPlane(filterCloud, maxIterations, plane_distance_threshold_in_cms/100.0);
-    //renderPointCloud(viewer, segResult.first, "obstacles", Color(1, 0, 0));
+    renderPointCloud(viewer, segResult.first, "obstacles", Color(1, 0, 0));
     if (show_road)
         renderPointCloud(viewer, segResult.second, "plane", Color(0, 1, 0));
     
     std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters;
-    cloudClusters = pointProcessor.Clustering(segResult.first, 0.20, min_cluster_size, max_cluster_size * 10);
+    cloudClusters = pointProcessor.Clustering(segResult.first, 0.20, min_cluster_size, max_cluster_size);
     int clusterId = 0;
     std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};
     for (pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters) {
-        std::cout << "cluster size ";
-        pointProcessor.numPoints(cluster);
+        // std::cout << "cluster size ";
+        // pointProcessor.numPoints(cluster);
         renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId % colors.size()]);
         ++clusterId;
 
@@ -151,12 +153,6 @@ static void on_trackbar_cluster_size(int , void*)
     cv::setTrackbarPos("Max Cluster Size", "Parameters", max_cluster_size);
 }
 
-static void button_callback(int state, void*)
-{
-    show_road =  !show_road;
-}
-
-
 int main (int argc, char** argv)
 {
     std::cout << "starting enviroment" << std::endl;
@@ -173,11 +169,11 @@ int main (int argc, char** argv)
     namedWindow("Parameters", WINDOW_AUTOSIZE); // Create Window
     cv::createTrackbar( "Segment plane distance threshold in cms", "Parameters", &plane_distance_threshold_in_cms, 200, NULL);
     cv::createTrackbar( "Min Cluster Size", "Parameters", &min_cluster_size, 200, on_trackbar_cluster_size);
-    cv::createTrackbar( "Max Cluster Size x 10", "Parameters", &max_cluster_size, 100, on_trackbar_cluster_size);
+    cv::createTrackbar( "Max Cluster Size x 10", "Parameters", &max_cluster_size, 5000, on_trackbar_cluster_size);
     cv::createTrackbar( "RanSac Iterations", "Parameters", &maxIterations, 500, NULL);
     cv::createTrackbar( "Voxel Filter Resolution (in cms)", "Parameters", &filter_resolution_cms, 100, NULL);
     cv::createTrackbar( "Pause Frame", "Parameters", &pause_frame, 1, NULL);
-    cv::createTrackbar( "Show Road", "Parameters", &show_road, 1, button_callback);
+    cv::createTrackbar( "Show Road", "Parameters", &show_road, 1, NULL);
     waitKey(1);
 
     while (!viewer->wasStopped ())

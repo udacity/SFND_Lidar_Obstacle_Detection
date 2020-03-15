@@ -282,7 +282,6 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
         for(auto pit=it->indices.begin(); pit != it->indices.end(); pit++) {
             cluster_cloud->points.push_back(cloud->points[*pit]);
         }
-        std::cout << "Cluster id: " << count << ", size: " << cluster_cloud->points.size() << std::endl;
         clusters.push_back(cluster_cloud);
         count ++;
     }
