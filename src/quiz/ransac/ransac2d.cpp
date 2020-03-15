@@ -232,13 +232,19 @@ int main ()
 	pcl::visualization::PCLVisualizer::Ptr viewer = initScene();
 
 	// Create data
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData3D();
+	pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud = CreateData3D();
+	typename pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+	
+	pcl::VoxelGrid<pcl::PointXYZ> voxel_filter;
+	voxel_filter.setInputCloud(input_cloud);
+	voxel_filter.setLeafSize(0.1, 0.1, 0.1);
+	voxel_filter.filter(*cloud);
 	
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
 	int maxIterations = 100;
-	float distanceThreshold = 0.1;
-	std::unordered_set<int> inliers = Ransac(cloud, maxIterations, distanceThreshold);
-	Ransac_PCL(cloud, maxIterations, distanceThreshold);
+	float distanceThreshold = 0.5;
+	std::unordered_set<int> inliers = Ransac3D(cloud, maxIterations, distanceThreshold);
+	//Ransac_PCL(cloud, maxIterations, distanceThreshold);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());

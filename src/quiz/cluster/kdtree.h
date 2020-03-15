@@ -30,8 +30,8 @@ struct KdTree
 	}
 
 	void insert_recursive(Node *&node, std::vector<float> point, int id, int depth)	{
-		// TODO: Fill in this function to insert a new point into the tree
-		// the function should create a new node and place correctly with in the root 
+		// Insert a new node into the KD-tree based on the 
+		// current depth and the value of the node element
 		if (node == NULL) {
 			node = new Node(point, id);
 		}

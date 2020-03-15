@@ -6,6 +6,10 @@
 #include <chrono>
 #include <string>
 #include "kdtree.h"
+#include <cv.h>
+#include <highgui.h>
+
+using namespace cv;
 
 // Arguments:
 // window is the region to draw box around
@@ -85,7 +89,6 @@ void proximity(int id,
 	cluster.push_back(id);
 	std::vector<int> neighbour_ids = tree->search(point, distanceTol);
 	for(int idx : neighbour_ids) {
-		std::vector<float> point = points[idx];
 		if (processed[idx] == 0) {
 			proximity(idx, points, tree, cluster, processed, distanceTol);
 		}
