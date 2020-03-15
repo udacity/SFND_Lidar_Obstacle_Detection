@@ -176,7 +176,6 @@ int main (int argc, char** argv)
     cv::createTrackbar( "Max Cluster Size x 10", "Parameters", &max_cluster_size, 100, on_trackbar_cluster_size);
     cv::createTrackbar( "RanSac Iterations", "Parameters", &maxIterations, 500, NULL);
     cv::createTrackbar( "Voxel Filter Resolution (in cms)", "Parameters", &filter_resolution_cms, 100, NULL);
-    cv::createTrackbar( "Use PCL Ransac", "Parameters", &use_pcl_ransac, 1, NULL);
     cv::createTrackbar( "Pause Frame", "Parameters", &pause_frame, 1, NULL);
     cv::createTrackbar( "Show Road", "Parameters", &show_road, 1, button_callback);
     waitKey(1);

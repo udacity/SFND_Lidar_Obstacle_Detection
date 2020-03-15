@@ -233,10 +233,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
     std::unordered_set<int> inliers;
-    if (use_pcl_ransac) 
-        inliers = RansacPCL<PointT>(cloud, maxIterations, distanceThreshold);
-    else 
-        inliers = Ransac<PointT>(cloud, maxIterations, distanceThreshold);
+    inliers = Ransac<PointT>(cloud, maxIterations, distanceThreshold);
     typename pcl::PointCloud<PointT>::Ptr obstacles_p (new pcl::PointCloud<PointT>);
     typename pcl::PointCloud<PointT>::Ptr plane_p (new pcl::PointCloud<PointT>);
 
