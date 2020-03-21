@@ -43,12 +43,20 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
 template<typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::SeparateClouds(pcl::PointIndices::Ptr inliers, typename pcl::PointCloud<PointT>::Ptr cloud) 
 {
-    // TODO: Create two new point clouds, one cloud with obstacles and other with segmented plane
-    typename pcl::PointCloud<PointT>::Ptr plane(new pcl::PointCloud<PointT>);
-    // copy all inliers of the cloud to another PointCloud
-    pcl::copyPointCloud (*cloud, *inliers, *plane);
-    // pcl::
-    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(cloud, plane);
+    typename pcl::PointCloud<PointT>::Ptr cloud_p (new pcl::PointCloud<PointT>), cloud_f(new pcl::PointCloud<PointT>);
+    
+    //Extract inliers
+    typename pcl::ExtractIndices<PointT> extract;
+    extract.setInputCloud(cloud);
+    extract.setIndices (inliers);
+    extract.setNegative (false);
+    extract.filter (*cloud_p);
+
+    // Create the filtering object
+    extract.setNegative (true);
+    extract.filter (*cloud_f);
+
+    std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT>::Ptr> segResult(cloud_p, cloud_f);
     return segResult;
 }
 
@@ -58,28 +66,21 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
 {
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
+    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients ());
 	pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-    // TODO:: Fill in this function to find inliers for the cloud.
     // Create the segmentation object
-    // typename pcl::SACSegmentation<PointT> seg;
-    // // Optional
-    // seg.setOptimizeCoefficients (true);
-    // // Mandatory
-    // seg.setModelType (pcl::SACMODEL_PLANE);
-    // seg.setMethodType (pcl::SAC_RANSAC);
-    // seg.setDistanceThreshold (distanceThreshold);
-
-    // seg.setInputCloud (cloud);
-    // seg.segment (*inliers, *coefficients);
-
-    
-
-    typename pcl::SampleConsensusModelPlane<PointT>::Ptr model_p (new pcl::SampleConsensusModelPlane<PointT> (cloud));
-    typename pcl::RandomSampleConsensus<PointT> ransac (model_p);
-    ransac.setDistanceThreshold (distanceThreshold);
-    ransac.computeModel();
-    ransac.getInliers(inliers->indices);
-
+    typename pcl::SACSegmentation<PointT> seg;
+    // Optional
+    seg.setOptimizeCoefficients (true);
+    // Mandatory
+    seg.setModelType (pcl::SACMODEL_PLANE);
+    seg.setMethodType (pcl::SAC_RANSAC);
+    seg.setMaxIterations (maxIterations);
+    seg.setDistanceThreshold (distanceThreshold);
+    // Perform segmentation
+    seg.setInputCloud (cloud);
+    seg.segment (*inliers, *coefficients);
+    // Time taken
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "plane segmentation took " << elapsedTime.count() << " milliseconds" << std::endl;
