@@ -71,10 +71,10 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 	for (int i = 0; i < maxIterations; ++i)
 	{
 		// Randomly sample subset and fit line
-		int indexP1 = rand() % cloud->size();
-		int indexP2 = rand() % cloud->size();
+		int indexP1 = rand() % cloud->points.size();
+		int indexP2 = rand() % cloud->points.size();
 		while (indexP1 == indexP2)
-			indexP2 = rand() % cloud->size();
+			indexP2 = rand() % cloud->points.size();
 		// Determine the coefficeints of the line
 		float x1, y1, x2, y2;
 		x1 = cloud->points.at(indexP1).x;
@@ -127,7 +127,7 @@ int main()
 	// Create data
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData();
 
-	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
+	// Perform RANSAC
 	std::unordered_set<int> inliers = Ransac(cloud, 10, 1.0);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
