@@ -52,11 +52,11 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
     // Segmenatation (defined geometry eg plane,line etc) - Ground plane
     ProcessPointClouds<pcl::PointXYZ> pointProcessor;
     std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr> segmentedCloud = pointProcessor.SegmentPlane(inputCloud, 100, 0.2);
-    // renderPointCloud(viewer, segmentedCloud.first, "road", Color(0, 1, 0));
+    renderPointCloud(viewer, segmentedCloud.first, "road", Color(0, 1, 0));
     // renderPointCloud(viewer, segmentedCloud.second, "obstacles", Color(1, 0, 0));
 
     // Clustering (no defined shape eg cars)- Obstacles
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pointProcessor.Clustering(segmentedCloud.second, 1.0, 3, 30);
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pointProcessor.Clustering(segmentedCloud.second, 1.2, 3, 30);
 
     int clusterId = 0;
     std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};
