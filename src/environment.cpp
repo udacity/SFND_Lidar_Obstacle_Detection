@@ -51,6 +51,7 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
     renderPointCloud(viewer, point_cloud, "Test", color);
 
     // TODO:: Create point processor
+    ProcessPointClouds<pcl::PointXYZ> *point_processor = new ProcessPointClouds<pcl::PointXYZ>();
 }
 
 //setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
