@@ -8,7 +8,7 @@ const double pi = 3.1415;
 
 struct Ray
 {
-	
+
 	Vect3 origin;
 	double resolution;
 	Vect3 direction;
@@ -18,7 +18,7 @@ struct Ray
 	// parameters:
 	// setOrigin: the starting position from where the ray is cast
 	// horizontalAngle: the angle of direction the ray travels on the xy plane
-	// verticalAngle: the angle of direction between xy plane and ray 
+	// verticalAngle: the angle of direction between xy plane and ray
 	// 				  for example 0 radians is along xy plane and pi/2 radians is stright up
 	// resoultion: the magnitude of the ray's step, used for ray casting, the smaller the more accurate but the more expensive
 
@@ -64,7 +64,6 @@ struct Ray
 			double rz = ((double) rand() / (RAND_MAX));
 			cloud->points.push_back(pcl::PointXYZ(castPosition.x+rx*sderr, castPosition.y+ry*sderr, castPosition.z+rz*sderr));
 		}
-			
 	}
 
 };
@@ -85,22 +84,20 @@ struct Lidar
 	Lidar(std::vector<Car> setCars, double setGroundSlope)
 		: cloud(new pcl::PointCloud<pcl::PointXYZ>()), position(0,0,2.6)
 	{
-		// TODO:: set minDistance to 5 to remove points from roof of ego car
-		minDistance = 0;
+		minDistance = 4; // remove points from roof of ego car
 		maxDistance = 50;
 		resoultion = 0.2;
-		// TODO:: set sderr to 0.2 to get more interesting pcd files
-		sderr = 0.0;
+		sderr = 0.2; // add noise (in m) to get more interesting pcd files
 		cars = setCars;
 		groundSlope = setGroundSlope;
 
-		// TODO:: increase number of layers to 8 to get higher resoultion pcd
-		int numLayers = 3;
+		// vertical layers
+		int numLayers = 8;
 		// the steepest vertical angle
 		double steepestAngle =  30.0*(-pi/180);
 		double angleRange = 26.0*(pi/180);
-		// TODO:: set to pi/64 to get higher resoultion pcd
-		double horizontalAngleInc = pi/6;
+		// pi/64 as horizontal resoultion
+		double horizontalAngleInc = pi/64;
 
 		double angleIncrement = angleRange/numLayers;
 
