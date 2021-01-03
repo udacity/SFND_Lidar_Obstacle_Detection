@@ -1,4 +1,4 @@
-// PCL lib Functions for processing point clouds 
+// PCL lib Functions for processing point clouds
 
 #ifndef PROCESSPOINTCLOUDS_H_
 #define PROCESSPOINTCLOUDS_H_
@@ -12,12 +12,25 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/common/transforms.h>
-#include <iostream> 
-#include <string>  
+
+#include <iostream>
+#include <string>
 #include <vector>
 #include <ctime>
 #include <chrono>
 #include "render/box.h"
+
+
+template<class T>
+void display_vector(std::vector<T> vect, std::string label="no label") {
+  std::cout << label <<" | ";
+  auto iter= vect.begin();
+  for (; iter!=vect.end()-1; iter++) {
+    std::cout << *iter<< ", ";
+  }
+  std::cout << *iter<< " | " << std::endl;
+};
+
 
 template<typename PointT>
 class ProcessPointClouds {
@@ -45,6 +58,6 @@ public:
     typename pcl::PointCloud<PointT>::Ptr loadPcd(std::string file);
 
     std::vector<boost::filesystem::path> streamPcd(std::string dataPath);
-  
+
 };
 #endif /* PROCESSPOINTCLOUDS_H_ */
