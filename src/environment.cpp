@@ -71,6 +71,8 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
         renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId]);
         ++clusterId;
     }
+
+
 }
 
 //setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side}
