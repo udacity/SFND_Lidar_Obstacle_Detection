@@ -54,15 +54,20 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // Render Lidar rays
     // renderRays(viewer, lidar->position, pointCloud);
 
-    // Render Point Cloud
-    renderPointCloud(viewer, pointCloud, "PointCloud");
+    // Render Point Cloud (disabled, below we render road and obstacles separately)
+    // renderPointCloud(viewer, pointCloud, "PointCloud");
 
     // Create point processor
-    // 1) On the stack
+    // 1) On the stack (return actual object)
     ProcessPointClouds<pcl::PointXYZ> pointProcessor;
-    // 2) On the heap (you need to return Ptr in some way!)
+    // 2) On the heap (return a pointer Ptr in some way!)
     // ProcessPointClouds<pcl::PointXYZ>* pointProcessorPtr = new ProcessPointClouds<pcl::PointXYZ>();
-  
+    
+    // Segment point cloud using RANSAC with 100 iterations and 0.2 m as distance tolerance
+    std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr> segmentCloud = pointProcessor.SegmentPlane(pointCloud, 100, 0.2);
+    // Render obstacle point cloud using red and road using green
+    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1,0,0));
+    renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0,1,0));
 }
 
 
