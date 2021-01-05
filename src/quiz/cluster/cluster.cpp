@@ -5,7 +5,8 @@
 #include "../../render/box.h"
 #include <chrono>
 #include <string>
-#include "kdtree.h"
+#include "kdtree.hpp"
+#include <unordered_set>
 
 // Arguments:
 // window is the region to draw box around
@@ -47,7 +48,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr CreateData(std::vector<std::vector<float>> p
 void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Box window, int& iteration, uint depth=0)
 {
 
-	if(node!=NULL)
+	if(node)
 	{
 		Box upperWindow = window;
 		Box lowerWindow = window;
@@ -75,21 +76,55 @@ void render2DTree(Node* node, pcl::visualization::PCLVisualizer::Ptr& viewer, Bo
 
 }
 
+
+void proximity(int id, const std::vector<std::vector<float>>& points, std::vector<int>& cluster, KdTree* tree, float distanceTol, std::vector<bool> &visitedIds)
+{
+	// Mark point id as processed
+	visitedIds[id] = true;
+    // Add point id to cluster
+	cluster.push_back(id);
+    // Find nearby points using Search method in KdTree class
+	std::vector<int> nearby = tree->search(points[id], distanceTol);
+    // Iterate through each nearby point
+	for (int id : nearby) {
+		// If point has not been processed
+		if (!visitedIds[id]) {
+			// Add points close to nearby point to cluster
+			proximity(id, points, cluster, tree, distanceTol, visitedIds);
+		}
+	}
+}
+
 std::vector<std::vector<int>> euclideanCluster(const std::vector<std::vector<float>>& points, KdTree* tree, float distanceTol)
 {
 
-	// TODO: Fill out this function to return list of indices for each cluster
-
+	// Create list of indices for each cluster
 	std::vector<std::vector<int>> clusters;
- 
-	return clusters;
 
+	// Create set of visited ids 
+	std::vector<bool> visitedIds(points.size(), false);
+	
+	// Iterate through points
+	for (int id = 0; id < points.size(); id++) {
+		// If point has not been processed
+		if (!visitedIds[id]) {
+			// Create cluster
+			std::vector<int> cluster;
+			// Add points close to point or to each other to cluster (passed by reference)
+			// Exploits id and visited ids (passed by reference) to avoid visiting points twice
+			proximity(id, points, cluster, tree, distanceTol, visitedIds);
+
+			// Add to clusters
+			clusters.push_back(cluster);
+		}
+	}
+	return clusters;
 }
 
 int main ()
 {
 
-	// Create viewer
+	//render Create viewer
 	Box window;
   	window.x_min = -10;
   	window.x_max =  10;
@@ -145,5 +180,5 @@ int main ()
   	{
   	  viewer->spinOnce ();
   	}
-  	
+
 }
