@@ -8,6 +8,8 @@
 // using templates for processPointClouds so also include .cpp to help linker
 #include "processPointClouds.cpp"
 
+#define RENDERBOX false
+
 std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer::Ptr &viewer)
 {
 
@@ -59,10 +61,10 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
     renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
     renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
 
-    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pointProcessor->Clustering(segmentCloud.first, 1.0, 3, 30);
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pointProcessor->Clustering(segmentCloud.first, 1, 3, 30);
 
     int clusterId = 0;
-    std::vector<Color> colors = {Color(1, 0, 0), Color(1, 1, 0), Color(0, 0, 1)};
+    std::vector<Color> colors = {Color(192, 192, 192), Color(1, 1, 0), Color(0, 0, 1)};
 
     for (pcl::PointCloud<pcl::PointXYZ>::Ptr cluster : cloudClusters)
     {
@@ -70,9 +72,12 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer)
         pointProcessor->numPoints(cluster);
         renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId]);
         ++clusterId;
+        if (RENDERBOX)
+        {
+            Box box = pointProcessor->BoundingBox(cluster);
+            renderBox(viewer, box, clusterId);
+        }
     }
-
-
 }
 
 //setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side}
