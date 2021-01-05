@@ -66,8 +66,29 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr& viewer)
     // Segment point cloud using RANSAC with 100 iterations and 0.2 m as distance tolerance
     std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr, pcl::PointCloud<pcl::PointXYZ>::Ptr> segmentCloud = pointProcessor.SegmentPlane(pointCloud, 100, 0.2);
     // Render obstacle point cloud using red and road using green
-    renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1,0,0));
+    // renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1,0,0));
     renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0,1,0));
+
+    // Cluster obstacle point cloud
+    std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters = pointProcessor.Clustering(segmentCloud.first, 1.0, 10,  500);
+    
+    // Use rgb colors
+    std::vector<Color> colors = {Color(1,0,0), Color(1,0,1), Color(0,0,1)};
+
+    // render each cluster with a different color    
+    int clusterId = 0;
+    for(pcl::PointCloud<pcl::PointXYZ>::Ptr cluster : cloudClusters)
+    {
+        std::cout << "cluster size ";
+        pointProcessor.numPoints(cluster);
+        renderPointCloud(viewer,cluster,"obstCloud"+std::to_string(clusterId), colors[clusterId % colors.size()]);
+
+        // Also render bounding box
+        Box box = pointProcessor.BoundingBox(cluster);
+        renderBox(viewer, box, clusterId, colors[clusterId % colors.size()]);
+
+        ++clusterId;
+    }
 }
 
 
