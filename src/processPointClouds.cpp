@@ -27,14 +27,34 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(ty
     // Time segmentation process
     auto startTime = std::chrono::steady_clock::now();
 
-    // TODO:: Fill in the function to do voxel grid point reduction and region based filtering
+    // Create new output point cloud
+    typename pcl::PointCloud<PointT>::Ptr filterCloud(new pcl::PointCloud<PointT>);
+
+    // Create VoxelGrid filter to downsample PCD, using grid resolution equal to filterRes
+    typename pcl::VoxelGrid<PointT> vGrid;
+    vGrid.setInputCloud(cloud);
+    vGrid.setLeafSize(filterRes, filterRes, filterRes);
+    vGrid.filter(*filterCloud);
+
+    // Crop points outside region of interest using CropBox
+    typename pcl::CropBox<PointT> crop;
+    crop.setInputCloud(filterCloud);
+    crop.setMin(minPoint);
+    crop.setMax(maxPoint);
+    crop.filter(*filterCloud);
+
+    // Crop points on roof using CropBox
+    crop.setNegative(true) ;
+    crop.setInputCloud(filterCloud);
+    crop.setMin(Eigen::Vector4f(-1.6, -1.7, -3., 1));
+    crop.setMax(Eigen::Vector4f( 2.6,  1.7,  3., 1));
+    crop.filter(*filterCloud);
 
     auto endTime = std::chrono::steady_clock::now();
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     std::cout << "filtering took " << elapsedTime.count() << " milliseconds" << std::endl;
 
-    return cloud;
-
+    return filterCloud;
 }
 
 
@@ -46,7 +66,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     // Declare the output clouds (plane, obstacle)
 
     // First create the filtering object
-    pcl::ExtractIndices<PointT> extract;
+    typename pcl::ExtractIndices<PointT> extract;
     // Extract the inliers and assign them to the plane point cloud
     extract.setInputCloud(cloud);
     extract.setIndices(inliers);
@@ -76,7 +96,7 @@ std::pair<typename pcl::PointCloud<PointT>::Ptr, typename pcl::PointCloud<PointT
     // Allocate model coefficients 
     pcl::ModelCoefficients::Ptr coeffs {new pcl::ModelCoefficients()};
     // Create the segmentation object
-    pcl::SACSegmentation<PointT> seg;
+    typename pcl::SACSegmentation<PointT> seg;
     // Optional
     seg.setOptimizeCoefficients(true);
     // Set model to plane and segmentation method to RANSAC
