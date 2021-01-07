@@ -194,7 +194,7 @@ int main ()
 	}
 
 
-	// Render 2D point cloud with inliers and outliers
+	// Render point cloud with inliers and outliers
 	if(inliers.size())
 	{
 		renderPointCloud(viewer,cloudInliers,"inliers",Color(0,1,0));
