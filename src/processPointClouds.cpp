@@ -22,6 +22,7 @@ template <typename PointT>
 void ProcessPointClouds<PointT>::proximity(int index, const std::vector<std::vector<float>> points, std::vector<int> &cluster, std::vector<bool> &processed, KdTree *tree, float distanceTol)
 {
     processed[index] = true;
+
     cluster.push_back(index);
     std::vector<int> nearest = tree->search(points[index], distanceTol);
     for (int i = 0; i < nearest.size(); i++)
@@ -45,7 +46,12 @@ std::vector<std::vector<int>> ProcessPointClouds<PointT>::euclideanCluster(const
         if (!processed[i])
         {
             std::vector<int> cluster;
+            //auto startTime = std::chrono::steady_clock::now();
             proximity(i, points, cluster, processed, tree, distanceTol);
+            //auto endTime = std::chrono::steady_clock::now();
+            //auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+            //std::cout << "proximity took " << elapsedTime.count() << " milliseconds" << std::endl;
+
             clusters.push_back(cluster);
         }
     }
@@ -271,6 +277,7 @@ std::vector<typename pcl::PointCloud<PointT>::Ptr> ProcessPointClouds<PointT>::C
     //     clusters.push_back(cloudCluster);
     // }
 
+    // quiz implementation
     // Create kdTree
     KdTree *tree = new KdTree;
     std::vector<std::vector<float>> points;

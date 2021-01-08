@@ -61,6 +61,7 @@ struct KdTree
 		bool condition = true;
 		for (int x=0; x< target.size(); x++){
 			condition = condition && (node->point[x] >= (target[x] - distanceTol));
+			//cout<< "distance in: "<< node->point[x] << " target:  "<< target[x] << "\n";
 		}
 
 		// if it's false, return false, else check the next part
