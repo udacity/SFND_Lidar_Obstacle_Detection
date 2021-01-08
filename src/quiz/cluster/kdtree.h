@@ -39,7 +39,7 @@ struct KdTree
 			node = new Node(point, id);
 		}else{
 
-			uint dimension = depth%2; // dimensions are x and y
+			uint dimension = depth%point.size(); // (dimensions are target.size())
 			if (point[dimension]< node-> point[dimension]){
 				insertHelper(node->left, depth + 1, point, id);
 			}else{
@@ -57,23 +57,45 @@ struct KdTree
 		return ids;
 	}
 
+	bool checkConditions(Node* node, std::vector<float> target, float distanceTol ){
+		bool condition = true;
+		for (int x=0; x< target.size(); x++){
+			condition = condition && (node->point[x] >= (target[x] - distanceTol));
+			//cout<< "distance in: "<< node->point[x] << " target:  "<< target[x] << "\n";
+		}
+
+		// if it's false, return false, else check the next part
+		if (!condition){
+			return condition;
+		}
+
+		for (int x=0; x< target.size(); x++){
+			condition = condition && (node->point[x] <= (target[x] + distanceTol));
+		}
+
+		return condition;
+	}
+
 	void searchHelper(Node* node, std::vector<float> target, uint depth, float distanceTol, std::vector<int> &ids ){
 		// base case
 		if(node != NULL){
-			if(	(node->point[0] >= (target[0] - distanceTol) && node->point[0] <= (target[0] + distanceTol))
-			&&  (node->point[1] >= (target[1] - distanceTol) && node->point[1] <= (target[1] + distanceTol)) ){
-
-				float distance = sqrtf(pow(node->point[0] - target[0], 2) + pow(node->point[1] - target[1], 2));
+			if (checkConditions(node, target, distanceTol)){
+	
+				float distance = 0.0;
+				for (int x=0; x< target.size(); x++){
+					distance += pow(node->point[x] - target[x], 2);
+				}
+				distance = sqrtf(distance);
 				if (distance <= distanceTol){
 					ids.push_back(node->id);
 				}
 			}
 
-			if ((target[depth%2] - distanceTol) < node->point[depth%2]){
+			if ((target[depth%target.size()] - distanceTol) < node->point[depth%target.size()]){
 				searchHelper(node->left, target, depth+1, distanceTol, ids);
 			}
 
-			if ((target[depth%2] + distanceTol) > node->point[depth%2]){
+			if ((target[depth%target.size()] + distanceTol) > node->point[depth%target.size()]){
 				searchHelper(node->right, target, depth+1, distanceTol, ids);
 			}
 
