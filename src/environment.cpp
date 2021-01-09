@@ -40,24 +40,47 @@ std::vector<Car> initHighway(bool renderScene, pcl::visualization::PCLVisualizer
     return cars;
 }
 
-void newCityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointClouds<pcl::PointXYZI> *pointProcessorI, const pcl::PointCloud<pcl::PointXYZI>::Ptr &inputCloud)
+void CityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointClouds<pcl::PointXYZI> *pointProcessorI, const pcl::PointCloud<pcl::PointXYZI>::Ptr &inputCloud)
 {
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterCloud(new pcl::PointCloud<pcl::PointXYZI>);
-    filterCloud = pointProcessorI->FilterCloud(inputCloud, 0.3f, Eigen::Vector4f(-10, -5, -3, 1), Eigen::Vector4f(20, 10, 5, 1));
+    filterCloud = pointProcessorI->FilterCloud(inputCloud, 0.27f, Eigen::Vector4f(-9, -5, -2, 1), Eigen::Vector4f(20, 10, 5, 1));
 
     // TODO: replace filtering with your RANSAC
-    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, 25, 0.3);
+    std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmentCloud = pointProcessorI->SegmentPlane(filterCloud, 100, 0.3);
+    renderPointCloud(viewer, segmentCloud.first, "obstacles", Color(1, 0, 1));
     renderPointCloud(viewer, segmentCloud.second, "plane", Color(0, 1, 0));
 
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr diff(new pcl::PointCloud<pcl::PointXYZI>());
+
+    for (int i=0; i<= segmentCloud.first->points.size(); i++){
+        bool flag = true;
+        for (int j=i+1; j<= segmentCloud.second->points.size(); j++){
+            
+            if (
+                (segmentCloud.first->points[i].x != segmentCloud.second->points[j].x)
+                && (segmentCloud.first->points[i].y != segmentCloud.second->points[j].y)
+                && (segmentCloud.first->points[i].z != segmentCloud.second->points[j].z)
+                ){
+                flag = false;
+            }
+        }
+
+        if (flag){
+            diff->points.push_back(segmentCloud.first->points[i]);
+        }
+       
+    }
+    
     // TODO: replace filtering with your Euclidean
-    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessorI->Clustering(segmentCloud.first, 0.7, 10, 500);
+    std::vector<pcl::PointCloud<pcl::PointXYZI>::Ptr> cloudClusters = pointProcessorI->Clustering(diff, 0.53, 10, 750);
     int clusterId = 0;
     std::vector<Color> colors = {Color(1, 0, 1), Color(1, 1, 0), Color(0, 0, 1)};
 
     for (pcl::PointCloud<pcl::PointXYZI>::Ptr cluster : cloudClusters)
     {
-        pointProcessorI->numPoints(cluster);
+        //pointProcessorI->numPoints(cluster);
         renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId), colors[clusterId]);
         ++clusterId;
         if (RENDERBOX)
@@ -68,7 +91,7 @@ void newCityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer, ProcessPointCl
     }
 }
 
-void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer)
+void oldCityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer)
 {
     // ----------------------------------------------------
     // -----Open 3D viewer and display City Block     -----
@@ -215,7 +238,7 @@ int main(int argc, char **argv)
 
         // Load pcd and run obstacle detection process
         inputCloudI = pointProcessorI->loadPcd((*streamIterator).string());
-        newCityBlock(viewer, pointProcessorI, inputCloudI);
+        CityBlock(viewer, pointProcessorI, inputCloudI);
 
         streamIterator++;
         if (streamIterator == stream.end())
