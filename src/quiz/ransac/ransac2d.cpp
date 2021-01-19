@@ -65,10 +65,47 @@ std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int ma
 {
 	std::unordered_set<int> inliersResult;
 	srand(time(NULL));
-	
 	// TODO: Fill in this function
-
-	// For max iterations 
+    int idx1, idx2, idx3;
+    int maxInliers {0};
+    float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+    float coeffA, coeffB, coeffC, coeffD, denom, distance;
+    std::unordered_set<int> buffer;
+    std::size_t points_size = cloud->size();
+    for(int i {0}; i < maxIterations; i++ ) {
+        idx1 = rand() % points_size;
+        x1 = cloud->points.at(idx1).x;
+        y1 = cloud->points.at(idx1).y;
+        z1 = cloud->points.at(idx1).z;
+        idx2 = rand() % points_size;
+        x2 = cloud->points.at(idx2).x;
+        y2 = cloud->points.at(idx2).y;
+        z2 = cloud->points.at(idx3).z;
+        idx3 = rand() % points_size;
+        x3 = cloud->points.at(idx3).x;
+        y3 = cloud->points.at(idx3).y;
+        z3 = cloud->points.at(idx3).z;
+        // coeffA = cloud->points.at(idx1).y - cloud->points.at(idx2).y;
+        // coeffB = cloud->points.at(idx2).x - cloud->points.at(idx1).x;
+        // coeffC = (cloud->points.at(idx1).x * cloud->points.at(idx2).y) - (cloud->points.at(idx2).x*cloud->points.at(idx1).y);
+        // denom = sqrt((coeffA*coeffA) + (coeffB*coeffB));
+        coeffA = ((y2 - y1)*(z3 - z1)) - ((z2 - z1)*(y3 - y1));
+        coeffB = ((z2 - z1)*(x3 - x1)) - ((x2 - x1)*(z3 - z1));
+        coeffC = ((x2 - x1)*(y3 - y1)) - ((y2 - y1)*(x3 - x1));
+        coeffD = -((coeffA*x1) + (coeffB*y1) + (coeffC*z1));
+        denom = sqrt((coeffA*coeffA) + (coeffB*coeffB) + (coeffC*coeffC));
+        for(int j{0}; j < points_size; j++) {
+            distance = fabs((cloud->points.at(j).x * coeffA) + (cloud->points.at(j).y * coeffB) + (cloud->points.at(j).z*coeffC) + coeffD) / denom;
+            if(distance < distanceTol)
+                buffer.insert(j);
+        }
+        if(buffer.size() > maxInliers) {
+            maxInliers = buffer.size();
+            inliersResult = buffer;
+        }
+        buffer.clear();
+    }
+	// For max iterations
 
 	// Randomly sample subset and fit line
 
@@ -88,11 +125,11 @@ int main ()
 	pcl::visualization::PCLVisualizer::Ptr viewer = initScene();
 
 	// Create data
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData();
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData3D();
 	
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
-	std::unordered_set<int> inliers = Ransac(cloud, 0, 0);
+	std::unordered_set<int> inliers = Ransac(cloud, 50, 0.5);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
