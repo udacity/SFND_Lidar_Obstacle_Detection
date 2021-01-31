@@ -1,6 +1,11 @@
 /* \author Aaron Brown */
 // Quiz on implementing simple RANSAC line fitting
 
+#include <cstdlib>
+#include <math.h>
+#include <utility>
+#include <tuple>
+
 #include "../../render/render.h"
 #include <unordered_set>
 #include "../../processPointClouds.h"
@@ -61,24 +66,94 @@ pcl::visualization::PCLVisualizer::Ptr initScene()
   	return viewer;
 }
 
-std::unordered_set<int> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int maxIterations, float distanceTol)
+
+/* Return wether the pointA and pointB are overlapping */
+bool overlapping(pcl::PointXYZ pointA, pcl::PointXYZ pointB) {
+	return (pointA.x == pointB.x) && (pointA.y == pointB.y) && (pointA.z == pointB.z);
+
+}
+
+/* Compute the unit vector of the AB line */
+pcl::PointXYZ vector(pcl::PointXYZ pointA, pcl::PointXYZ pointB) {
+	return pcl::PointXYZ((pointB.x - pointA.x), (pointB.y - pointA.y), (pointB.z - pointA.z));
+}
+
+float norm(pcl::PointXYZ vect) {
+	return (float) sqrt(pow(vect.x, 2) + pow(vect.y, 2) + pow(vect.z, 2));
+}
+
+pcl::PointXYZ unit( pcl::PointXYZ vect) {
+	auto norm_ = norm(vect);
+	return pcl::PointXYZ(vect.x/norm_, vect.y/norm_, vect.z/norm_);
+}
+
+float scalar_product(pcl::PointXYZ pointB, pcl::PointXYZ pointA) {
+	return (float) ((pointA.x * pointB.x) + (pointA.y * pointB.y) + (pointA.z * pointB.z));
+}
+
+
+float distance_to_line(pcl::PointXYZ point, pcl::PointXYZ linePointA, pcl::PointXYZ vectorAB) {
+	auto vectorAX = vector(linePointA, point);
+	return sqrt(1-pow(scalar_product(unit(vectorAX), unit(vectorAB)),2)) * norm(vectorAX);
+}
+
+std::tuple<int, int,  std::unordered_set<int>> Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int maxIterations, float distanceTol)
 {
-	std::unordered_set<int> inliersResult;
+
+	// Small sanity checks (to move to tests)
+	std::cout << "S. check " << scalar_product(unit(vector(pcl::PointXYZ(0,0,0), pcl::PointXYZ(1,0,0))),
+				   unit(vector(pcl::PointXYZ(0,0,0), pcl::PointXYZ(2,0,0)))) << std::endl;
+	std::cout << "S. check norm" << norm(unit(vector(pcl::PointXYZ(0,0,0), pcl::PointXYZ(3, 0, 0)))) << std::endl;
+
+	std::tuple<int, int, std::unordered_set<int>> results;
+
+
 	srand(time(NULL));
-	
-	// TODO: Fill in this function
+	if (cloud->size()>1) {
+		// TODO distinguish the case with only 2 points
+	for (int iter=0; iter< maxIterations; iter++) {
+		std::unordered_set<int> inliers;
 
-	// For max iterations 
+		// Randomly sample subset (2 points) and fit line
+		auto pointAIndex = rand() % cloud->size();
+		auto pointA = cloud->at(pointAIndex);
+		auto pointBIndex = rand() % cloud->size();
+		auto pointB = cloud->at(pointBIndex);
 
-	// Randomly sample subset and fit line
+		while ((pointAIndex == pointBIndex) || overlapping(pointA, pointB)) {
+			// ensure 2 distinct points (by content not by index) re-draw point B
+			pointBIndex = rand() % cloud->size();
+			pointB = cloud->at(pointBIndex);
+			// std::cout << "tie resolved" << std::endl;
+		}
+		//  Insert selected seed points (pointA and pointB) indices as inliers
+		inliers.insert(pointAIndex);
+		inliers.insert(pointBIndex);
 
-	// Measure distance between every point and fitted line
-	// If distance is smaller than threshold count it as inlier
+		// std::cout << "line (points): " << pointA << "," << pointB << std::endl;
 
+		// Measure distance between every point and fitted line
+		auto vectorAB = vector(pointA, pointB);
+
+		std::cout << "Distance B to AB (should be 0)" << distance_to_line(pointB, pointA, vectorAB) << std::endl;
+		for (int index = 0; index < cloud->points.size(); index++) {
+			// If distance is smaller than threshold count it as inlier
+			if (inliers.count(index)>0)
+			 continue; // it is one the points A, B defining the line
+			// Measure distance between every point and fitted line
+			// If distance is smaller than threshold count it as inlier
+			if (distance_to_line(cloud->at(index), pointA, vectorAB)< distanceTol){
+				inliers.insert(index);
+			}
+		}
+
+		if (inliers.size() > std::get<2>(results).size())
+			results = std::tie(pointAIndex, pointBIndex, inliers);
+	}
+
+	}
 	// Return indicies of inliers from fitted line with most inliers
-	
-	return inliersResult;
-
+	return results;
 }
 
 int main ()
@@ -89,18 +164,23 @@ int main ()
 
 	// Create data
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud = CreateData();
-	
+
 
 	// TODO: Change the max iteration and distance tolerance arguments for Ransac function
-	std::unordered_set<int> inliers = Ransac(cloud, 0, 0);
+	auto seed_inliers = Ransac(cloud, 200, 1);
 
-	pcl::PointCloud<pcl::PointXYZ>::Ptr  cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudSeed(new pcl::PointCloud<pcl::PointXYZ>());
+	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudInliers(new pcl::PointCloud<pcl::PointXYZ>());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloudOutliers(new pcl::PointCloud<pcl::PointXYZ>());
+
+	// Add the elected seed (initial line points) !
+	cloudSeed->points.push_back(cloud->points[std::get<0>(seed_inliers)]);
+	cloudSeed->points.push_back(cloud->points[std::get<1>(seed_inliers)]);
 
 	for(int index = 0; index < cloud->points.size(); index++)
 	{
 		pcl::PointXYZ point = cloud->points[index];
-		if(inliers.count(index))
+		if(std::get<2>(seed_inliers).count(index))
 			cloudInliers->points.push_back(point);
 		else
 			cloudOutliers->points.push_back(point);
@@ -108,19 +188,20 @@ int main ()
 
 
 	// Render 2D point cloud with inliers and outliers
-	if(inliers.size())
+	if(std::get<2>(seed_inliers).size())
 	{
 		renderPointCloud(viewer,cloudInliers,"inliers",Color(0,1,0));
   		renderPointCloud(viewer,cloudOutliers,"outliers",Color(1,0,0));
+		renderPointCloud(viewer,cloudSeed,"seed",Color(1, 1, 1)); // seed with bright white
 	}
   	else
   	{
   		renderPointCloud(viewer,cloud,"data");
   	}
-	
+
   	while (!viewer->wasStopped ())
   	{
   	  viewer->spinOnce ();
   	}
-  	
+
 }
