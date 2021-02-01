@@ -17,3 +17,6 @@ list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 
 add_executable (ransac_line ransac_line.cpp ../../render/render.cpp)
 target_link_libraries (ransac_line ${PCL_LIBRARIES})
+
+add_executable (ransac_plane ransac_plane.cpp ../../render/render.cpp)
+target_link_libraries (ransac_plane ${PCL_LIBRARIES})

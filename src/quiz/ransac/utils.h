@@ -48,8 +48,8 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr addZData(pcl::PointCloud<pcl::PointXYZ>::Ptr
     auto points = pointsNbr ;
     while(points--){
         double rz = 2*(((double) rand() / (RAND_MAX))-0.5);
-  		cloud->points.push_back(pcl::PointXYZ(0,0,5*rz));
-  	}
+        cloud->points.push_back(pcl::PointXYZ(0,0,5*rz));
+    }
     cloud->width = cloud->points.size();
     cloud->height = 1;
     return cloud;
