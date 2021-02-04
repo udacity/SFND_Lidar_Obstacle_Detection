@@ -1,4 +1,8 @@
+#ifndef LINEAR_ALGEBRA_UTILS_H
+#define LINEAR_ALGEBRA_UTILS_H
+
 #include <pcl/common/common.h>
+#include<vector>
 
 /* Return wether the pointA and pointB are overlapping */
 bool overlapping(pcl::PointXYZ pointA, pcl::PointXYZ pointB) {
@@ -54,3 +58,10 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr addZData(pcl::PointCloud<pcl::PointXYZ>::Ptr
     cloud->height = 1;
     return cloud;
 }
+
+template <typename PointT>
+std::vector<float> toVector(PointT point) {
+    return {point.x, point.y, point.z};
+}
+
+#endif // LINEAR_ALGEBRA_UTILS_H
