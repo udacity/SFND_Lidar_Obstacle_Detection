@@ -3,6 +3,11 @@
 #ifndef PROCESSPOINTCLOUDS_H_
 #define PROCESSPOINTCLOUDS_H_
 
+#include "quiz/cluster/cluster.h"
+#include "quiz/cluster/kdtree.h"
+#include "quiz/ransac/utils.h"
+#include "render/box.h"
+
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
 #include <pcl/filters/extract_indices.h>
@@ -18,7 +23,6 @@
 #include <vector>
 #include <ctime>
 #include <chrono>
-#include "render/box.h"
 
 
 template<class T>
