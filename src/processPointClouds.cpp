@@ -23,21 +23,42 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(
 
   // Voxel grid point reduction
   pcl::VoxelGrid<PointT> vg;
-  typename pcl::PointCloud<PointT>::Ptr vgCloud(
-      new pcl::PointCloud<PointT>());
+  typename pcl::PointCloud<PointT>::Ptr vgCloud(new pcl::PointCloud<PointT>());
   vg.setInputCloud(cloud);
   vg.setLeafSize(filterRes, filterRes, filterRes);
   vg.filter(*vgCloud);
 
   // Region crop based filtered
   typename pcl::PointCloud<PointT>::Ptr regionCloud(
-    new pcl::PointCloud<PointT>());
+      new pcl::PointCloud<PointT>());
 
-    pcl::CropBox<PointT> region(true);
-    region.setMin(minPoint);
-    region.setMax(maxPoint);
-    region.setInputCloud(vgCloud);
-    region.filter(*regionCloud);
+  pcl::CropBox<PointT> region(true);
+  region.setMin(minPoint);
+  region.setMax(maxPoint);
+  region.setInputCloud(vgCloud);
+  region.filter(*regionCloud);
+
+  // filtering ego car roof points
+    typename pcl::PointCloud<PointT>::Ptr roofCloud(
+      new pcl::PointCloud<PointT>());
+
+  std::vector<int> roof_indices;
+  pcl::CropBox<PointT> roof(true);
+  // TODO refactor roof limit as param
+  roof.setMin(Eigen::Vector4f(-2., -1.5, -1.0, 1));
+  roof.setMax(Eigen::Vector4f(2.0, 1.5, .5, 1));
+  roof.setInputCloud(regionCloud);
+  roof.filter(roof_indices);
+
+  std::cout << "roof points:" <<roof_indices.size() << std::endl;
+
+  pcl::ExtractIndices<PointT> extract;
+  extract.setInputCloud(regionCloud);
+  extract.setIndices(toPointIndices(roof_indices));
+  extract.setNegative(true);
+  extract.filter(*regionCloud);
+
+
 
   auto endTime = std::chrono::steady_clock::now();
   auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -139,11 +160,11 @@ ProcessPointClouds<PointT>::Clustering(
     typename pcl::PointCloud<PointT>::Ptr clusterCloud(
         new pcl::PointCloud<PointT>());
     for (int index : cluster) {
-        clusterCloud->points.push_back(cloud->points[index]);
+      clusterCloud->points.push_back(cloud->points[index]);
     }
     // filter-out (discard) too small and too large clusters
     if ((clusterCloud->size() > minSize) && (clusterCloud->size() < maxSize))
-        clusters.push_back(clusterCloud);
+      clusters.push_back(clusterCloud);
   }
 
   auto endTime = std::chrono::steady_clock::now();

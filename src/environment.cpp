@@ -79,16 +79,21 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer) {
   auto obstacleClusters  = ppc->Clustering(segmentCloud.first, .3, 2, 500);
 
   // rendering clusters
+
   int clusterId = 0;
-  std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};
+  std::vector<Color> colors = {Color(1, 1, 0), Color(1, 0, 1), Color(0, 1, 0), Color(0, 0, 1), Color(0, 1, 1)};
   for (auto clusterCloud : obstacleClusters) {
     renderPointCloud(viewer, clusterCloud,
                      "cluster" + std::to_string(clusterId),
-                     colors[clusterId % 3]);
+                     colors[clusterId % colors.size()]);
     Box box = ppc->BoundingBox(clusterCloud);
     renderBox(viewer, box, clusterId);
     ++clusterId;
   }
+  // rendering roof box (to calibrate the right params.)
+  renderBox(viewer, Box{-2., -1.5, -1.0, 2.0, 1.5, .5}, ++clusterId, Color(.5, 0., .5));
+
+
 
   // renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
   renderPointCloud(viewer, segmentCloud.second, "planeCloud",
