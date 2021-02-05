@@ -34,16 +34,11 @@ euclideanCluster(const std::vector<std::vector<float>> &points, KdTree *tree,
 
   for (int index = 0; index < points.size(); index++) {
     if (!processed[index]) {
-      if (clusters.end() != clusters.begin()) {
-        std::cout << "cluster " << clusters.size() << " completed -> " << (*(clusters.end() - 1)).size() << std::endl;
-      }
       std::vector<int> cluster;
       proximity(index, points, processed, tree, distanceTol, cluster);
       clusters.push_back(cluster);
     }
-
   }
-  std::cout << "cluster " << clusters.size() << " completed -> " << (*(clusters.end() - 1)).size() << std::endl;
   return clusters;
 }
 
