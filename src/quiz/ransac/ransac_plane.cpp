@@ -1,10 +1,11 @@
 /**
  * @author Wajih Ouertani
  * @email wajih.ouertani@gmail.com
- * @create date 2021-02-02 03:28:02
- * @modify date 2021-02-02 03:28:02
  * @desc Ransac for plane detection
  */
+
+#include "utils.h"
+#include "ransac_plane.h"
 
 #include <cstdlib>
 #include <math.h>
@@ -17,7 +18,6 @@
 // using templates for processPointClouds so also include .cpp to help linker
 #include "../../processPointClouds.cpp"
 
-#include "utils.h"
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr CreateData() {
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(
@@ -67,87 +67,6 @@ pcl::visualization::PCLVisualizer::Ptr initScene() {
   return viewer;
 }
 
-std::tuple<int, int, int, std::unordered_set<int>>
-Ransac(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int maxIterations,
-       float distanceTol) {
-
-  // Small sanity checks (to move to tests)
-  std::cout << "S. check "
-            << scalar_product(
-                   unit(vector(pcl::PointXYZ(0, 0, 0), pcl::PointXYZ(1, 0, 0))),
-                   unit(vector(pcl::PointXYZ(0, 0, 0), pcl::PointXYZ(2, 0, 0))))
-            << std::endl;
-  std::cout << "S. check norm "
-            << norm(
-                   unit(vector(pcl::PointXYZ(0, 0, 0), pcl::PointXYZ(3, 0, 0))))
-            << std::endl;
-
-  std::tuple<int, int, int, std::unordered_set<int>> results;
-
-  srand(time(NULL));
-  if (cloud->size() > 1) {
-    // TODO distinguish the case with only 2 points
-    for (int iter = 0; iter < maxIterations; iter++) {
-      std::unordered_set<int> inliers;
-
-      // Randomly sample subset (3 points) to define the plane
-      auto pointAIndex = rand() % cloud->size();
-      auto pointBIndex = rand() % cloud->size();
-      auto pointCIndex = rand() % cloud->size();
-
-      // Measure distance between every point and fitted line
-      auto pointA = cloud->at(pointAIndex);
-      auto pointB = cloud->at(pointBIndex);
-      auto pointC = cloud->at(pointCIndex);
-
-      auto vectorAB = vector(pointA, pointB);
-      auto vectorAC = vector(pointA, pointC);
-      auto ABxAC = cross_product(vectorAB, vectorAC);
-
-      while (norm(ABxAC) == 0) {
-        // should avoid collinearity
-        pointBIndex = rand() % cloud->size();
-        pointCIndex = rand() % cloud->size();
-
-        pointB = cloud->at(pointBIndex);
-        pointC = cloud->at(pointCIndex);
-
-        vectorAB = vector(pointA, pointB);
-        vectorAC = vector(pointA, pointC);
-        ABxAC = cross_product(vectorAB, vectorAC);
-      }
-
-      //  Insert selected seed points (pointA and pointB) indices as inliers
-      inliers.insert(pointAIndex);
-      inliers.insert(pointBIndex);
-      inliers.insert(pointCIndex);
-
-      for (int index = 0; index < cloud->points.size(); index++) {
-        // If distance is smaller than threshold count it as inlier
-        if (inliers.count(index) > 0)
-          continue; // it is one the points A, B defining the line
-                    // Measure distance between every point and fitted line
-                    // If distance is smaller than threshold count it as inlier
-        auto distance =
-            fabs(scalar_product(unit(ABxAC), vector(pointA, cloud->at(index))));
-        if (distance < distanceTol) {
-          inliers.insert(index);
-        }
-      }
-
-      if (inliers.size() > std::get<3>(results).size()) {
-        results = std::tie(pointAIndex, pointBIndex, pointCIndex, inliers);
-        std::cout << "cross prod. AB x AB (should be 0)"
-                  << cross_product(vectorAB, vectorAB) << std::endl;
-        std::cout << "cross prod. AB x AC "
-                  << unit(cross_product(vectorAB, vectorAC)) << std::endl;
-        std::cout << "inliers size ->" << inliers.size() << std::endl;
-      }
-    }
-  }
-  // Return indicies of inliers from fitted line with most inliers
-  return results;
-}
 
 int main() {
 
@@ -160,7 +79,7 @@ int main() {
 
   // TODO: Change the max iteration and distance tolerance arguments for Ransac
   // function
-  auto seed_inliers = Ransac(cloud, 200, 0.2);
+  auto seed_inliers = RansacPlane<pcl::PointXYZ>(cloud, 200, 0.2);
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloudSeed(
       new pcl::PointCloud<pcl::PointXYZ>());
