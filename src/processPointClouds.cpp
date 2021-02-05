@@ -1,5 +1,6 @@
 // PCL lib Functions for processing point clouds
 #include "processPointClouds.h"
+#include "quiz/ransac/ransac_plane.h"
 
 // constructor:
 template <typename PointT> ProcessPointClouds<PointT>::ProcessPointClouds() {}
@@ -100,7 +101,7 @@ ProcessPointClouds<PointT>::SeparateClouds(
 template <typename PointT>
 std::pair<typename pcl::PointCloud<PointT>::Ptr,
           typename pcl::PointCloud<PointT>::Ptr>
-ProcessPointClouds<PointT>::SegmentPlane(
+ProcessPointClouds<PointT>::PCLSegmentPlane(
     typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations,
     float distanceThreshold) {
   // Time segmentation process
@@ -120,6 +121,36 @@ ProcessPointClouds<PointT>::SegmentPlane(
 
   seg.setInputCloud(cloud);
   seg.segment(*inliers, *coefs);
+
+
+  if (inliers->indices.size() == 0) {
+    std::cout << "Could not estimate a planar model for the given dataset."
+              << std::endl;
+  }
+
+  auto endTime = std::chrono::steady_clock::now();
+  auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+      endTime - startTime);
+  std::cout << "plane segmentation took " << elapsedTime.count()
+            << " milliseconds" << std::endl;
+
+  return SeparateClouds(inliers, cloud);
+}
+
+
+template <typename PointT>
+std::pair<typename pcl::PointCloud<PointT>::Ptr,
+          typename pcl::PointCloud<PointT>::Ptr>
+ProcessPointClouds<PointT>::SegmentPlane(
+    typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations,
+    float distanceThreshold) {
+  // Time segmentation process
+  auto startTime = std::chrono::steady_clock::now();
+
+//   pcl::PointIndices::Ptr inliers(new pcl::PointIndices); // inliers indices
+
+  auto seed_inliers = RansacPlane<PointT>(cloud, maxIterations, distanceThreshold);
+  auto inliers = toPointIndices(std::get<3>(seed_inliers));
 
   if (inliers->indices.size() == 0) {
     std::cout << "Could not estimate a planar model for the given dataset."
