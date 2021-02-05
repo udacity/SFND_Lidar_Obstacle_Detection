@@ -14,10 +14,10 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
 
+# include directories
+set(SRC_ROOT ./src)
+include_directories(${SRC_ROOT})
 
-add_executable (environment src/environment.cpp src/render/render.cpp src/processPointClouds.cpp)
+
+add_executable (environment ${SRC_ROOT}/environment.cpp ${SRC_ROOT}/render/render.cpp)
 target_link_libraries (environment ${PCL_LIBRARIES})
-
-
-
-
