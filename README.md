@@ -54,11 +54,11 @@ http://www.pointclouds.org/downloads/windows.html
 	```
 
 #### Prebuilt Binaries via Universal Installer
-http://www.pointclouds.org/downloads/macosx.html  
+https://pointclouds.org/downloads/  
 NOTE: very old version 
 
 #### Build from Source
 
 [PCL Source Github](https://github.com/PointCloudLibrary/pcl)
 
-[PCL Mac Compilation Docs](http://www.pointclouds.org/documentation/tutorials/compiling_pcl_macosx.php)
+[PCL Mac Compilation Docs](https://pcl.readthedocs.io/projects/tutorials/en/latest/compiling_pcl_macosx.html#compiling-pcl-macosx)
