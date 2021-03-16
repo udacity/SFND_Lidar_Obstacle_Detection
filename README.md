@@ -30,7 +30,7 @@ $> ./environment
 
 ### Windows 
 
-http://www.pointclouds.org/downloads/windows.html
+https://pointclouds.org/downloads/#cross-platform
 
 ### MAC
 
