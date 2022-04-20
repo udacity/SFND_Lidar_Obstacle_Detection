@@ -111,6 +111,7 @@ The workspace provided in the SFND classroom comes preinstallated with everythin
    make
    ./environment
    ```
+If you get build errors related to Qt5, make sure that the path for Qt5 is correctly set in .bash_profile or .zsh_profile (Refer [#45](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/issues/45))
 
 ### WINDOWS
 
