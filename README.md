@@ -16,17 +16,16 @@ In this course we will be talking about sensor fusion, whch is the process of ta
 
 The workspace provided in the SFND classroom comes preinstallated with everything that you need to finish the exercises and projects. Versions used by Udacity for this ND are as follows:
 
-* Ubuntu 16.04
-* PCL - v1.7.2
-* C++ v11
-* gcc v5.5
+- Ubuntu 16.04
+- PCL - v1.7.2
+- C++ v11
+- gcc v5.5
 
 **Note** The [[CMakeLists.txt](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/blob/master/CMakeLists.txt)] file provided in this repo can be used locally if you have the same package versions as mentioned above. If you want to run this project locally (outside the Udacity workspace), please follow the steps under the **Local Installation** section.
 
-
 ## Local Installation
 
-### Ubuntu 
+### Ubuntu
 
 1. Clone this github repo:
 
@@ -35,29 +34,29 @@ The workspace provided in the SFND classroom comes preinstallated with everythin
    git clone https://github.com/udacity/SFND_Lidar_Obstacle_Detection.git
    ```
 
-2.  Edit [CMakeLists.txt](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/blob/master/CMakeLists.txt) as follows:
+2. Edit [CMakeLists.txt](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/blob/master/CMakeLists.txt) as follows:
 
-   ```cmake
-   cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-   
-   add_definitions(-std=c++14)
-   
-   set(CXX_FLAGS "-Wall")
-   set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
-   
-   project(playback)
-   
-   find_package(PCL 1.11 REQUIRED)
-   
-   include_directories(${PCL_INCLUDE_DIRS})
-   link_directories(${PCL_LIBRARY_DIRS})
-   add_definitions(${PCL_DEFINITIONS})
-   list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
-   
-   
-   add_executable (environment src/environment.cpp src/render/render.cpp src/processPointClouds.cpp)
-   target_link_libraries (environment ${PCL_LIBRARIES})
-   ```
+```cmake
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+add_definitions(-std=c++14)
+
+set(CXX_FLAGS "-Wall")
+set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
+
+project(playback)
+
+find_package(PCL 1.11 REQUIRED)
+
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
+
+
+add_executable (environment src/environment.cpp src/render/render.cpp src/processPointClouds.cpp)
+target_link_libraries (environment ${PCL_LIBRARIES})
+```
 
 3. Execute the following commands in a terminal
 
@@ -71,7 +70,7 @@ The workspace provided in the SFND classroom comes preinstallated with everythin
    ```
 
    This should install the latest version of PCL. You should be able to do all the classroom exercises and project with this setup.
-   
+
 **Note** The library version of PCL being distributed by the apt repository for 18.04 and 20.04 are both older than v1.11. The following links have the information regarding the versions-
 
 [Bionic 18.04](https://www.ubuntuupdates.org/package/core/bionic/universe/updates/libpcl-dev)
@@ -82,23 +81,25 @@ You can either build PCL from source (for v1.11) or use the older version.
 ### MAC
 
 #### Install via Homebrew
+
 1. install [homebrew](https://brew.sh/)
-2. update homebrew 
-	```bash
-	$> brew update
-	```
-3. add  homebrew science [tap](https://docs.brew.sh/Taps) 
-	```bash
-	$> brew tap brewsci/science
-	```
+2. update homebrew
+   ```bash
+   $> brew update
+   ```
+3. add homebrew science [tap](https://docs.brew.sh/Taps)
+   ```bash
+   $> brew tap brewsci/science
+   ```
 4. view pcl install options
-	```bash
-	$> brew options pcl
-	```
-5. install PCL 
-	```bash
-	$> brew install pcl
-	```
+   ```bash
+   $> brew options pcl
+   ```
+5. install PCL
+
+   ```bash
+   $> brew install pcl
+   ```
 
 6. Clone this github repo
 
@@ -118,7 +119,8 @@ You can either build PCL from source (for v1.11) or use the older version.
    make
    ./environment
    ```
-If you get build errors related to Qt5, make sure that the path for Qt5 is correctly set in .bash_profile or .zsh_profile (Refer [#45](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/issues/45))
+
+   If you get build errors related to Qt5, make sure that the path for Qt5 is correctly set in .bash_profile or .zsh_profile (Refer [#45](https://github.com/udacity/SFND_Lidar_Obstacle_Detection/issues/45))
 
 ### WINDOWS
 
@@ -150,3 +152,13 @@ If you get build errors related to Qt5, make sure that the path for Qt5 is corre
 [PCL Source Github](https://github.com/PointCloudLibrary/pcl)
 
 [PCL Mac Compilation Docs](https://pcl.readthedocs.io/projects/tutorials/en/latest/compiling_pcl_macosx.html#compiling-pcl-macosx)
+
+#### Additional steps taken for compiling and executing the project
+
+- Running on Windows 10
+- Installed Visual Studio 2022 Community Edition
+- Install C++ Compiler: https://sourceforge.net/projects/mingw/ and setting its installed dir into PATH environment variable as well
+- Installed CMAKE
+- Installed PCL (Point Cloud Library): https://github.com/PointCloudLibrary/pcl/releases - download the allInOne installer from here and set the path of the pcl dir in environment variables which in my case is C:\dev\PCL 1.13.1\bin
+- C:\Program Files\OpenNI2\Tools - when executing the successful build from the Visual Studio folder of C:\Users\Milin Joshi\Desktop\SensorFusion\LearningSensorFusion\SFND_Lidar_Obstacle_Detection\build\Debug it can throw error of OpenNI2.dll was not found, to resolve this add the dir C:\Program Files\OpenNI2\Tools to Envrionment variable Path
+- execute by running the environment.exe in <project>\build\Debug
